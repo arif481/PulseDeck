@@ -7,7 +7,7 @@ Thank you for your interest in contributing to PulseDeck! This guide will help y
 1. **Fork** the repository on GitHub
 2. **Clone** your fork locally:
    ```bash
-   git clone https://github.com/<your-username>/PulseDeck.git
+   git clone https://github.com/arif481/PulseDeck.git
    cd PulseDeck
    ```
 3. **Create a branch** for your changes:
