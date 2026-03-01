@@ -1,0 +1,10 @@
+[Desktop Entry]
+Name=PulseDeck
+Comment=Lightweight System Monitor & Assistant
+Type=Application
+Exec=python3 /home/stressuwu/Desktop/PulseDeck/main.py
+Icon=utilities-system-monitor
+Categories=System;Monitor;
+Keywords=system;monitor;cpu;ram;temperature;fan;
+StartupNotify=true
+Terminal=false
