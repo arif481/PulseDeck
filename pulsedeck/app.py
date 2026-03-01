@@ -13,7 +13,7 @@ class PulseDeckApp(Adw.Application):
     def __init__(self):
         super().__init__(
             application_id="com.pulsedeck.app",
-            flags=Gio.ApplicationFlags.DEFAULT_FLAGS,
+            flags=Gio.ApplicationFlags.FLAGS_NONE,
         )
         self._window = None
 
