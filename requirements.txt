@@ -1,2 +1,6 @@
+# PulseDeck - Python dependencies
+# System packages also required: gir1.2-gtk-4.0, gir1.2-adw-1
+# See README.md for full installation instructions.
+
 psutil>=5.9.0
 PyGObject>=3.42.0

@@ -1,10 +1,15 @@
 [Desktop Entry]
+Version=1.1
 Name=PulseDeck
-Comment=Lightweight System Monitor & Assistant
+GenericName=System Monitor
+Comment=Lightweight System Monitor & Assistant for Linux
 Type=Application
-Exec=python3 /home/stressuwu/Desktop/PulseDeck/main.py
+Exec=python3 main.py
 Icon=utilities-system-monitor
-Categories=System;Monitor;
-Keywords=system;monitor;cpu;ram;temperature;fan;
+Path=/opt/pulsedeck
+Categories=System;Monitor;GTK;
+Keywords=system;monitor;cpu;ram;disk;temperature;fan;network;
 StartupNotify=true
+StartupWMClass=com.pulsedeck.app
 Terminal=false
+X-GNOME-UsesNotifications=false

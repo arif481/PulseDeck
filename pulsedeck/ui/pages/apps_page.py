@@ -10,6 +10,7 @@ from pulsedeck.managers.apps import (
     install_apt_package, uninstall_apt_package,
     install_flatpak_app, uninstall_flatpak_app,
 )
+from pulsedeck.ui.widgets import create_error_banner, show_error_banner, hide_error_banner
 
 
 class AppsPage(Gtk.Box):
@@ -31,16 +32,31 @@ class AppsPage(Gtk.Box):
         scroll.set_hexpand(True)
         self.append(scroll)
 
-        content = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=12)
-        content.set_margin_top(16)
-        content.set_margin_bottom(16)
-        content.set_margin_start(16)
-        content.set_margin_end(16)
-        scroll.set_child(content)
+        clamp = Adw.Clamp()
+        clamp.set_maximum_size(900)
+        clamp.set_tightening_threshold(600)
+        scroll.set_child(clamp)
 
-        # Search bar for installing new apps
+        content = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=16)
+        content.set_margin_top(20)
+        content.set_margin_bottom(24)
+        content.set_margin_start(20)
+        content.set_margin_end(20)
+        clamp.set_child(content)
+
+        # ── Header ──
+        header = Gtk.Label(label="Applications")
+        header.set_halign(Gtk.Align.START)
+        header.add_css_class("section-title")
+        content.append(header)
+
+        # ── Error banner (hidden by default) ──
+        self._error_banner = create_error_banner()
+        content.append(self._error_banner)
+
+        # ── Search bar for installing new apps ──
         search_card = Adw.PreferencesGroup()
-        search_card.set_title("Find & Install Apps")
+        search_card.set_title("Find and Install Apps")
         search_card.set_description("Search for new packages to install")
 
         search_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=8)
@@ -48,42 +64,42 @@ class AppsPage(Gtk.Box):
         search_box.set_margin_bottom(8)
 
         self._search_entry = Gtk.SearchEntry()
-        self._search_entry.set_placeholder_text("Search packages (e.g., vlc, gimp, firefox)...")
+        self._search_entry.props.placeholder_text = "Search packages (e.g., vlc, gimp, firefox)..."
         self._search_entry.set_hexpand(True)
+        self._search_entry.add_css_class("search-entry-large")
         self._search_entry.connect("activate", self._on_search)
         search_box.append(self._search_entry)
 
         search_btn = Gtk.Button(label="Search")
         search_btn.add_css_class("suggested-action")
+        search_btn.add_css_class("pill-button")
         search_btn.connect("clicked", self._on_search)
         search_box.append(search_btn)
 
-        # Wrap search box
         search_row = Adw.ActionRow()
         search_row.set_child(search_box)
         search_card.add(search_row)
         content.append(search_card)
 
-        # Search results
+        # ── Search results ──
         self._results_card = Adw.PreferencesGroup()
         self._results_card.set_title("Search Results")
         self._results_spinner = Gtk.Spinner()
         self._results_card.set_header_suffix(self._results_spinner)
         content.append(self._results_card)
 
-        # Installed apps
+        # ── Installed apps ──
         self._installed_card = Adw.PreferencesGroup()
         self._installed_card.set_title("Installed Applications")
         self._installed_spinner = Gtk.Spinner()
         self._installed_spinner.start()
         self._installed_card.set_header_suffix(self._installed_spinner)
 
-        # Filter entry
         filter_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=8)
         filter_box.set_margin_top(4)
         filter_box.set_margin_bottom(4)
         self._filter_entry = Gtk.SearchEntry()
-        self._filter_entry.set_placeholder_text("Filter installed apps...")
+        self._filter_entry.props.placeholder_text = "Filter installed apps..."
         self._filter_entry.set_hexpand(True)
         self._filter_entry.connect("search-changed", self._on_filter_changed)
         filter_box.append(self._filter_entry)
@@ -98,7 +114,7 @@ class AppsPage(Gtk.Box):
 
         content.append(self._installed_card)
 
-        # Status bar
+        # ── Status bar ──
         self._status_bar = Adw.PreferencesGroup()
         self._status_label = Adw.ActionRow(title="Ready")
         self._status_label.set_icon_name("emblem-ok-symbolic")
@@ -108,15 +124,29 @@ class AppsPage(Gtk.Box):
     def _load_installed_apps(self):
         """Load installed apps in a background thread."""
         def _do():
-            apps = get_all_installed_apps()
-            GLib.idle_add(self._on_apps_loaded, apps)
+            try:
+                apps = get_all_installed_apps()
+                GLib.idle_add(self._on_apps_loaded, apps)
+            except Exception as e:
+                GLib.idle_add(self._on_apps_load_failed, str(e))
 
         t = threading.Thread(target=_do, daemon=True)
         t.start()
 
+    def _on_apps_load_failed(self, error_msg):
+        """Handle failed app loading."""
+        self._installed_spinner.stop()
+        self._app_count_label.set_text("Error")
+        show_error_banner(
+            self._error_banner,
+            "Failed to load installed applications",
+            error_msg
+        )
+
     def _on_apps_loaded(self, apps):
         self._installed_apps = apps
         self._installed_spinner.stop()
+        hide_error_banner(self._error_banner)
         self._app_count_label.set_text(f"{len(apps)} apps")
         self._show_installed_apps(apps[:100])  # Show first 100
 
@@ -135,6 +165,7 @@ class AppsPage(Gtk.Box):
             # Uninstall button
             btn = Gtk.Button(label="Remove")
             btn.add_css_class("destructive-action")
+            btn.add_css_class("pill-button")
             btn.set_valign(Gtk.Align.CENTER)
             btn.connect("clicked", self._on_uninstall, app)
             row.add_suffix(btn)
@@ -186,6 +217,8 @@ class AppsPage(Gtk.Box):
 
         if not results:
             row = Adw.ActionRow(title="No results found")
+            row.set_subtitle("Try a different search term")
+            row.set_icon_name("dialog-information-symbolic")
             self._results_card.add(row)
             self._search_rows.append(row)
             return
@@ -198,6 +231,7 @@ class AppsPage(Gtk.Box):
 
             btn = Gtk.Button(label="Install")
             btn.add_css_class("suggested-action")
+            btn.add_css_class("pill-button")
             btn.set_valign(Gtk.Align.CENTER)
             btn.connect("clicked", self._on_install, res, btn)
             row.add_suffix(btn)

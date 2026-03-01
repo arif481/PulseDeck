@@ -1,4 +1,5 @@
 """Utility helpers."""
+import os
 import time
 
 
@@ -79,3 +80,8 @@ def get_os_name():
     except Exception:
         pass
     return "Linux"
+
+
+def is_root():
+    """Check if the application is running with root privileges."""
+    return os.geteuid() == 0
