@@ -34,7 +34,7 @@ A native GTK4/libadwaita system monitoring application for Pop!_OS and other GNO
 
 <!-- Add screenshots here: ![Dashboard](docs/screenshots/dashboard.png) -->
 
-*Screenshots coming soon — contributions welcome!*
+Screenshots are not added yet.
 
 ## Requirements
 
@@ -46,7 +46,7 @@ A native GTK4/libadwaita system monitoring application for Pop!_OS and other GNO
 | psutil | 5.9+ | |
 | smartmontools | — | *Optional*, for SMART disk health |
 
-### Install System Dependencies
+### Install system dependencies
 
 <details>
 <summary><strong>Ubuntu / Pop!_OS / Debian</strong></summary>
@@ -79,7 +79,7 @@ sudo pacman -S smartmontools   # optional
 
 </details>
 
-## Quick Start
+## Quick start
 
 ```bash
 # Clone
@@ -93,7 +93,7 @@ python3 main.py
 sudo python3 main.py
 ```
 
-### Desktop Integration
+### Desktop integration
 
 ```bash
 make install-desktop   # adds .desktop entry to your app launcher
@@ -105,7 +105,7 @@ Or manually:
 cp data/com.pulsedeck.app.desktop ~/.local/share/applications/
 ```
 
-## Project Structure
+## Project structure
 
 ```
 PulseDeck/
@@ -165,14 +165,14 @@ sudo python3 main.py            # root mode
 python3 -m pulsedeck            # module mode
 ```
 
-## Design Principles
+## Design principles
 
-- **Lightweight** — Pure Python + GTK4 native widgets; no Electron, no web stack
-- **Broad Compatibility** — Targets libadwaita 1.1+ (ships with Ubuntu 22.04+)
-- **Non-intrusive** — Polling at sensible intervals (2–5 s), minimal CPU/RAM footprint
-- **Graceful Degradation** — Sensors that fail show clear error banners, not silent zeros
-- **Modern UI** — GNOME HIG, dark theme, Cairo-drawn widgets with gradients and glow effects
-- **No Terminal Needed** — GUI for everything (install, uninstall, launch, kill, governor)
+- Pure Python with native GTK4 widgets. No Electron and no web stack.
+- Targets libadwaita 1.1 and later, which ships with Ubuntu 22.04 and newer.
+- Polls every 2 to 5 seconds to keep its own CPU and memory use low.
+- A sensor that fails shows an error banner instead of reading zero.
+- Follows the GNOME HIG, with a dark theme and Cairo-drawn widgets.
+- Everything, from install and uninstall to killing processes and switching the CPU governor, works from the GUI.
 
 ## Contributing
 
@@ -180,4 +180,4 @@ Contributions are welcome! Please read [CONTRIBUTING.md](CONTRIBUTING.md) for gu
 
 ## License
 
-[MIT](LICENSE) — see the [LICENSE](LICENSE) file for details.
+[MIT](LICENSE)
