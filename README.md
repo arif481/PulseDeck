@@ -1,182 +1,51 @@
-<div align="center">
-
 # PulseDeck
 
-**Lightweight System Monitor & Assistant for Linux**
+A system monitor for Pop!_OS and other GNOME-based Linux desktops, written in Python with GTK4 and libadwaita. It puts CPU, memory, disk, network and temperature readings in one native window, along with a few controls that usually need a terminal: switching the CPU governor, killing a process, setting fan speed, and installing or removing apps.
 
-A native GTK4/libadwaita system monitoring application for Pop!_OS and other GNOME-based Linux distributions. Real-time resource monitoring with a modern, polished interface — no terminal needed.
+## Pages
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-[![Python 3.8+](https://img.shields.io/badge/Python-3.8+-green.svg)](https://python.org)
-[![GTK 4](https://img.shields.io/badge/GTK-4.0-orange.svg)](https://gtk.org)
-[![libadwaita](https://img.shields.io/badge/libadwaita-1.1+-purple.svg)](https://gnome.pages.gitlab.gnome.org/libadwaita/)
-[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
+| Page | What it shows |
+|------|---------------|
+| Dashboard | CPU, RAM and disk gauges, sparklines, temperatures, battery, uptime |
+| CPU | Per-core usage, frequency, load averages, history, top processes; governor switching and process kill (root) |
+| Memory | RAM and swap, cached and buffers, history, top consumers; process kill (root) |
+| Storage | Partition usage, live disk I/O; SMART health (root and smartmontools) |
+| Network | Bandwidth graphs, interface list, errors and drops; connection summary (root) |
+| Thermal | Temperature per sensor, fan RPM, battery; PWM fan speed (root, on hardware that exposes it) |
+| Apps | Installed apt, Flatpak and Snap apps; search, install, uninstall, launch |
 
-</div>
-
----
-
-## Features
-
-| Page | Highlights |
-|------|-----------|
-| **Dashboard** | CPU, RAM, Disk circular gauges · sparkline graphs · temperatures · battery status · uptime |
-| **CPU** | Per-core usage bars · frequency tracking · load averages · history graph · top processes · governor control *(root)* · process kill *(root)* |
-| **Memory** | RAM & Swap gauges · cached / buffers breakdown · usage history · top consumers · process kill *(root)* |
-| **Storage** | Partition usage · real-time disk I/O · SMART health status *(root + smartmontools)* |
-| **Network** | Bandwidth graphs · interface listing · connection summary *(root)* · error & drop tracking |
-| **Thermal** | Per-sensor temperature graphs · fan RPM · battery info |
-| **Apps** | Browse installed apps (apt, Flatpak, Snap) · search & install · uninstall · launch |
-
-> Features marked *(root)* require running with `sudo`. See [SECURITY.md](SECURITY.md) for details.
-
-## Screenshots
-
-<!-- Add screenshots here: ![Dashboard](docs/screenshots/dashboard.png) -->
-
-Screenshots are not added yet.
+Pages refresh every 2 to 5 seconds. A sensor that can't be read shows an error banner rather than a zero. [SECURITY.md](SECURITY.md) explains what the root features do.
 
 ## Requirements
 
-| Dependency | Minimum Version | Notes |
-|-----------|:--------------:|-------|
-| Python | 3.8+ | |
-| GTK | 4.0 | |
-| libadwaita | 1.1+ | 1.4+ API is **not** required |
-| psutil | 5.9+ | |
-| smartmontools | — | *Optional*, for SMART disk health |
-
-### Install system dependencies
-
-<details>
-<summary><strong>Ubuntu / Pop!_OS / Debian</strong></summary>
+Python 3.8 or newer, GTK 4, libadwaita 1.1 or newer (the version in Ubuntu 22.04) and psutil 5.9 or newer. smartmontools is optional.
 
 ```bash
-sudo apt install python3-gi python3-gi-cairo gir1.2-gtk-4.0 gir1.2-adw-1 python3-psutil
-# Optional: SMART disk health
-sudo apt install smartmontools
+# Ubuntu, Pop!_OS, Debian
+sudo apt install python3-gi python3-gi-cairo gir1.2-gtk-4.0 gir1.2-adw-1 python3-psutil smartmontools
+
+# Fedora
+sudo dnf install python3-gobject gtk4 libadwaita python3-psutil smartmontools
+
+# Arch
+sudo pacman -S python-gobject gtk4 libadwaita python-psutil smartmontools
 ```
 
-</details>
-
-<details>
-<summary><strong>Fedora</strong></summary>
+## Running it
 
 ```bash
-sudo dnf install python3-gobject gtk4 libadwaita python3-psutil
-sudo dnf install smartmontools   # optional
-```
-
-</details>
-
-<details>
-<summary><strong>Arch Linux</strong></summary>
-
-```bash
-sudo pacman -S python-gobject gtk4 libadwaita python-psutil
-sudo pacman -S smartmontools   # optional
-```
-
-</details>
-
-## Quick start
-
-```bash
-# Clone
 git clone https://github.com/arif481/PulseDeck.git
 cd PulseDeck
-
-# Run (standard user)
-python3 main.py
-
-# Run with root privileges (unlocks governor, SMART, kill, full network)
-sudo python3 main.py
+python3 main.py          # or: make run
+sudo python3 main.py     # with root features; or: make run-root
+make install-desktop     # add it to the app launcher
 ```
 
-### Desktop integration
+`make help` lists the other targets (`lint`, `clean`, `uninstall-desktop`).
 
-```bash
-make install-desktop   # adds .desktop entry to your app launcher
-```
+## Code layout
 
-Or manually:
-
-```bash
-cp data/com.pulsedeck.app.desktop ~/.local/share/applications/
-```
-
-## Project structure
-
-```
-PulseDeck/
-├── main.py                          # Entry point
-├── pyproject.toml                   # Package metadata & build config
-├── Makefile                         # Common tasks (run, install, lint, clean)
-├── pulsedeck/
-│   ├── __init__.py                  # Package root & version
-│   ├── __main__.py                  # python -m pulsedeck support
-│   ├── app.py                       # Adw.Application subclass
-│   ├── monitors/
-│   │   ├── cpu.py                   # CPU metrics, governor, process mgmt
-│   │   ├── memory.py                # RAM & Swap monitoring
-│   │   ├── storage.py               # Disk partitions, I/O, SMART health
-│   │   ├── thermal.py               # Temperature sensors, fans, battery
-│   │   └── network.py               # Interfaces, bandwidth, connections
-│   ├── managers/
-│   │   └── apps.py                  # Package management (apt/flatpak/snap)
-│   ├── ui/
-│   │   ├── widgets.py               # Cairo-drawn gauges, graphs, bars
-│   │   ├── window.py                # Main window, sidebar nav, CSS theme
-│   │   └── pages/                   # One module per monitoring page
-│   │       ├── dashboard.py
-│   │       ├── cpu_page.py
-│   │       ├── memory_page.py
-│   │       ├── storage_page.py
-│   │       ├── network_page.py
-│   │       ├── thermal_page.py
-│   │       └── apps_page.py
-│   └── utils/
-│       └── helpers.py               # Formatting & utility functions
-├── data/
-│   ├── com.pulsedeck.app.desktop    # Freedesktop .desktop entry
-│   └── icons/                       # Application icons
-├── CHANGELOG.md
-├── CODE_OF_CONDUCT.md
-├── CONTRIBUTING.md
-├── SECURITY.md
-└── LICENSE
-```
-
-## Usage
-
-```bash
-make run          # Launch PulseDeck
-make run-root     # Launch with root access
-make lint         # Syntax-check all Python files
-make clean        # Remove __pycache__ and build artifacts
-make help         # Show all available targets
-```
-
-Or run directly:
-
-```bash
-python3 main.py                 # standard mode
-sudo python3 main.py            # root mode
-python3 -m pulsedeck            # module mode
-```
-
-## Design principles
-
-- Pure Python with native GTK4 widgets. No Electron and no web stack.
-- Targets libadwaita 1.1 and later, which ships with Ubuntu 22.04 and newer.
-- Polls every 2 to 5 seconds to keep its own CPU and memory use low.
-- A sensor that fails shows an error banner instead of reading zero.
-- Follows the GNOME HIG, with a dark theme and Cairo-drawn widgets.
-- Everything, from install and uninstall to killing processes and switching the CPU governor, works from the GUI.
-
-## Contributing
-
-Contributions are welcome! Please read [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
+`pulsedeck/monitors/` reads the numbers from psutil, `/proc` and `/sys`. `pulsedeck/managers/apps.py` wraps apt, flatpak and snap. `pulsedeck/ui/` has one module per page under `pages/`, and `widgets.py` draws the gauges and graphs with Cairo.
 
 ## License
 
